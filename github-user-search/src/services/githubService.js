@@ -1,17 +1,29 @@
 import axios from "axios";
 
-const GITHUB_API_URL = "https://api.github.com/search/users?q=";
-
 export const fetchUserData = async (username, location, minRepos) => {
-  try {
-    let query = `${username}`;
+    let query = `q=${username}`;
     if (location) query += `+location:${location}`;
     if (minRepos) query += `+repos:>${minRepos}`;
 
-    const response = await axios.get(`${GITHUB_API_URL}${query}`);
-    return response.data.items || [];
-  } catch (error) {
-    console.error("Error fetching user data:", error);
-    return [];
-  }
+    try {
+        const response = await axios.get(`https://api.github.com/search/users?${query}`);
+        const usersData = response.data.items;
+
+        // Fetch detailed user info
+        const detailedUsers = await Promise.all(
+            usersData.map(async (user) => {
+                const userResponse = await axios.get(user.url);
+                return {
+                    ...user,
+                    location: userResponse.data.location || "N/A",
+                    public_repos: userResponse.data.public_repos || "N/A",
+                };
+            })
+        );
+
+        return detailedUsers;
+    } catch (error) {
+        console.error("Error fetching user data:", error);
+        return [];
+    }
 };
