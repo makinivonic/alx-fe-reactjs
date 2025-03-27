@@ -9,7 +9,7 @@ export const fetchUserData = async (username, location, minRepos) => {
         const response = await axios.get(`https://api.github.com/search/users?${query}`);
         const usersData = response.data.items;
 
-        // Fetch detailed user info
+        // Fetch detailed user info (since search API doesn’t return repo count)
         const detailedUsers = await Promise.all(
             usersData.map(async (user) => {
                 const userResponse = await axios.get(user.url);
