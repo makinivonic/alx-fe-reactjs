@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 
-const Search = () => {
+const Search = ({ onSearch }) => {
     const [username, setUsername] = useState("");
     const [location, setLocation] = useState("");
     const [minRepos, setMinRepos] = useState("");
@@ -17,11 +17,25 @@ const Search = () => {
 
         let query = `q=${username}`;
         if (location) query += `+location:${location}`;
-        if (minRepos) query += `+repos:>${minRepos}`;
 
         try {
             const response = await axios.get(`https://api.github.com/search/users?${query}`);
-            setUsers(response.data.items);
+            const usersData = response.data.items;
+
+            // Fetch detailed user info (since search API doesn’t return repo count)
+            const detailedUsers = await Promise.all(
+                usersData.map(async (user) => {
+                    const userResponse = await axios.get(user.url);
+                    return {
+                        ...user,
+                        location: userResponse.data.location || "N/A",
+                        public_repos: userResponse.data.public_repos || "N/A",
+                    };
+                })
+            );
+
+            setUsers(detailedUsers);
+            onSearch(detailedUsers); // Send data to the parent
         } catch (err) {
             setError(true);
         } finally {
@@ -68,8 +82,8 @@ const Search = () => {
                             <img src={user.avatar_url} alt="Avatar" className="w-12 h-12 rounded-full" />
                             <div>
                                 <p className="font-semibold">{user.login}</p>
-                                <p>Location: {user.location || "N/A"}</p>
-                                <p>Repos: {user.public_repos || "N/A"}</p>
+                                <p>Location: {user.location}</p>
+                                <p>Repos: {user.public_repos}</p>
                                 <a href={user.html_url} target="_blank" rel="noopener noreferrer" className="text-blue-500">
                                     View Profile
                                 </a>
