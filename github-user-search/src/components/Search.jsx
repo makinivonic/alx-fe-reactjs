@@ -7,9 +7,11 @@ const Search = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false);
 
-    const fetchUserData = async () => {
+    const fetchUserData = async (e) => {
+        e.preventDefault(); // Prevent page refresh on form submit
         setLoading(true);
         setError(false);
+
         try {
             const response = await axios.get(`https://api.github.com/users/${username}`);
             setUserData(response.data);
@@ -22,16 +24,19 @@ const Search = () => {
 
     return (
         <div className="p-4">
-            <input
-                type="text"
-                placeholder="Enter GitHub username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="border p-2 rounded"
-            />
-            <button onClick={fetchUserData} className="ml-2 bg-blue-500 text-white p-2 rounded">
-                Search
-            </button>
+            {/* ✅ Add form with onSubmit */}
+            <form onSubmit={fetchUserData} className="flex gap-2">
+                <input
+                    type="text"
+                    placeholder="Enter GitHub username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="border p-2 rounded"
+                />
+                <button type="submit" className="bg-blue-500 text-white p-2 rounded">
+                    Search
+                </button>
+            </form>
 
             {loading && <p>Loading...</p>}
             {error && <p>Looks like we can't find the user</p>}
