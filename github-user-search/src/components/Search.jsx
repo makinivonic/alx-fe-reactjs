@@ -11,6 +11,7 @@ const Search = () => {
         e.preventDefault(); // Prevent page refresh on form submit
         setLoading(true);
         setError(false);
+        setUserData(null); // Reset user data on new search
 
         try {
             const response = await axios.get(`https://api.github.com/users/${username}`);
@@ -24,7 +25,7 @@ const Search = () => {
 
     return (
         <div className="p-4">
-            {/* ✅ Add form with onSubmit */}
+            {/* ✅ Form with onSubmit */}
             <form onSubmit={fetchUserData} className="flex gap-2">
                 <input
                     type="text"
@@ -38,9 +39,13 @@ const Search = () => {
                 </button>
             </form>
 
+            {/* ✅ Loading State */}
             {loading && <p>Loading...</p>}
+
+            {/* ✅ Error State (Missing User) */}
             {error && <p>Looks like we can't find the user</p>}
 
+            {/* ✅ Display User Info */}
             {userData && (
                 <div className="mt-4">
                     <img src={userData.avatar_url} alt="Avatar" className="w-16 h-16 rounded-full" />
